@@ -1,0 +1,55 @@
+Description des classes
+XSDFile
+
+Attributs :
+path: Chemin du fichier XSD.
+schema: Contenu du schéma XSD.
+version: Version du schéma.
+Méthodes :
+load(): Charge le fichier XSD.
+validate(): Valide le schéma par rapport à des règles.
+get_elements(): Retourne la liste des éléments définis dans le XSD.
+compare(other: XSDFile): Compare l'instance actuelle avec une autre instance de XSDFile et retourne une liste d'incohérences.
+Element
+
+Attributs :
+name: Nom de l'élément.
+type: Type de l'élément.
+minOccurs: Nombre minimum d'occurrences de l'élément.
+maxOccurs: Nombre maximum d'occurrences de l'élément.
+attributes: Liste des attributs de l'élément.
+children: Liste des éléments enfants.
+Méthodes :
+validate_constraints(): Valide les contraintes de l'élément.
+compare(other: Element): Compare l'instance actuelle avec une autre instance de Element et retourne une liste d'incohérences.
+to_xml(): Convertit l'élément en chaîne XML.
+Attribute
+
+Attributs :
+name: Nom de l'attribut.
+type: Type de l'attribut.
+restrictions: Restrictions appliquées à l'attribut.
+Méthodes :
+validate(): Valide l'attribut.
+compare(other: Attribute): Compare l'instance actuelle avec une autre instance de Attribute.
+to_xml(): Convertit l'attribut en chaîne XML.
+XML
+
+Attributs :
+root_element: Référence à l'élément racine de l'instance XML.
+namespaces: Dictionnaire pour gérer les espaces de noms utilisés dans le XML.
+Méthodes :
+load_from_file(path: str): Charge un fichier XML à partir du chemin donné.
+validate(): Valide l'instance XML par rapport à un fichier XSD.
+get_elements(): Retourne la liste des éléments dans l'instance XML.
+compare(other: XML): Compare l'instance actuelle avec une autre instance de XML et retourne une liste d'incohérences.
+Inconsistency
+
+Attributs :
+description: Description de l'incohérence détectée.
+element: Référence à l'élément concerné.
+attribute: Référence à l'attribut concerné.
+Méthodes :
+__str__(): Représentation sous forme de chaîne de l'incohérence.
+Utilisation du diagramme
+Ce diagramme de classes fournit une structure complète pour le projet, permettant la gestion et la comparaison des fichiers XSD et XML, tout en facilitant l'identification des incohérences. Les différentes classes et leurs méthodes permettent d'organiser le code de manière logique, facilitant ainsi le développement et la maintenance.

@@ -1,0 +1,61 @@
++--------------------------------+
+|            XSDFile            |
++--------------------------------+
+| - path: str                   |
+| - schema: str                 |
+| - version: str                |
++--------------------------------+
+| + load(): None                 |
+| + validate(): bool             |
+| + get_elements(): List[Element]|
+| + compare(other: XSDFile): List[Inconsistency]|
++--------------------------------+
+
++--------------------------------+
+|            Element             |
++--------------------------------+
+| - name: str                   |
+| - type: str                   |
+| - minOccurs: int              |
+| - maxOccurs: int              |
+| - attributes: List[Attribute] |
+| - children: List[Element]     |
++--------------------------------+
+| + validate_constraints(): bool  |
+| + compare(other: Element): List[Inconsistency]|
+| + to_xml(): str               |
++--------------------------------+
+
++--------------------------------+
+|           Attribute            |
++--------------------------------+
+| - name: str                   |
+| - type: str                   |
+| - restrictions: str           |
++--------------------------------+
+| + validate(): bool             |
+| + compare(other: Attribute): bool|
+| + to_xml(): str               |
++--------------------------------+
+
++--------------------------------+
+|            XML                 |
++--------------------------------+
+| - root_element: Element        |
+| - namespaces: Dict[str, str]   |
++--------------------------------+
+| + load_from_file(path: str): None|
+| + validate(): bool             |
+| + get_elements(): List[Element]|
+| + compare(other: XML): List[Inconsistency]|
++--------------------------------+
+
++--------------------------------+
+|        Inconsistency           |
++--------------------------------+
+| - description: str            |
+| - element: Element            |
+| - attribute: Attribute         |
++--------------------------------+
+| + __str__(): str              |
++--------------------------------+

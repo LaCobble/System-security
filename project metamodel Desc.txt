@@ -1,0 +1,56 @@
+Description des Éléments du Métamodèle
+Schema
+
+Attributs :
+targetNamespace: Le namespace cible du schéma.
+version: Version du schéma.
+Méthodes :
+add_element(element: Element): Ajoute un élément au schéma.
+add_attribute(attribute: Attribute): Ajoute un attribut au schéma.
+validate(): Valide le schéma.
+Element
+
+Attributs :
+name: Nom de l'élément.
+type: Type de l'élément.
+minOccurs: Nombre minimum d'occurrences.
+maxOccurs: Nombre maximum d'occurrences.
+attributes: Liste des attributs de l'élément.
+children: Liste des éléments enfants.
+parent: Référence à l'élément parent (facultatif).
+Méthodes :
+validate_constraints(): Valide les contraintes de l'élément.
+compare(other: Element): Compare l'élément avec un autre élément pour détecter les incohérences.
+to_xml(): Convertit l'élément en XML.
+Attribute
+
+Attributs :
+name: Nom de l'attribut.
+type: Type de l'attribut.
+restrictions: Restrictions appliquées à l'attribut.
+parent: Référence à l'élément parent.
+Méthodes :
+validate(): Valide l'attribut.
+compare(other: Attribute): Compare l'attribut avec un autre attribut.
+to_xml(): Convertit l'attribut en XML.
+Document
+
+Attributs :
+root_element: Référence à l'élément racine du document XML.
+namespaces: Dictionnaire pour gérer les espaces de noms.
+schema: Référence au schéma associé.
+Méthodes :
+load_from_file(path: str): Charge un document XML à partir d'un fichier.
+validate(): Valide le document XML par rapport à son schéma.
+compare(other: Document): Compare le document avec un autre document pour détecter les incohérences.
+Inconsistency
+
+Attributs :
+description: Description de l'incohérence.
+element: Référence à l'élément concerné par l'incohérence.
+attribute: Référence à l'attribut concerné par l'incohérence.
+severity: Niveau de gravité de l'incohérence (par exemple, critique, mineur).
+Méthodes :
+__str__(): Retourne une représentation sous forme de chaîne de l'incohérence.
+Utilisation du Métamodèle
+Ce métamodèle sert de base pour structurer les classes et les relations de ton application. Il fournit une vue d'ensemble des concepts clés, tels que les schémas, les éléments, les attributs, les documents et les incohérences. En suivant ce métamodèle, tu peux assurer une cohérence et une clarté dans la conception de ton application, facilitant ainsi son développement et sa maintenance.
