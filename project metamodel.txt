@@ -1,0 +1,62 @@
++--------------------------------+
+|            Schema              |
++--------------------------------+
+| - targetNamespace: str         |
+| - version: str                 |
++--------------------------------+
+| + add_element(element: Element) |
+| + add_attribute(attribute: Attribute) |
+| + validate(): bool             |
++--------------------------------+
+
++--------------------------------+
+|            Element             |
++--------------------------------+
+| - name: str                   |
+| - type: str                   |
+| - minOccurs: int              |
+| - maxOccurs: int              |
+| - attributes: List[Attribute] |
+| - children: List[Element]     |
+| - parent: Element (optional)  |
++--------------------------------+
+| + validate_constraints(): bool  |
+| + compare(other: Element): List[Inconsistency]|
+| + to_xml(): str               |
++--------------------------------+
+
++--------------------------------+
+|           Attribute            |
++--------------------------------+
+| - name: str                   |
+| - type: str                   |
+| - restrictions: str           |
+| - parent: Element             |
++--------------------------------+
+| + validate(): bool             |
+| + compare(other: Attribute): bool|
+| + to_xml(): str               |
++--------------------------------+
+
++--------------------------------+
+|            Document            |
++--------------------------------+
+| - root_element: Element        |
+| - namespaces: Dict[str, str]   |
+| - schema: Schema               |
++--------------------------------+
+| + load_from_file(path: str): None|
+| + validate(): bool             |
+| + compare(other: Document): List[Inconsistency]|
++--------------------------------+
+
++--------------------------------+
+|        Inconsistency           |
++--------------------------------+
+| - description: str            |
+| - element: Element            |
+| - attribute: Attribute         |
+| - severity: str               |
++--------------------------------+
+| + __str__(): str              |
++--------------------------------+
