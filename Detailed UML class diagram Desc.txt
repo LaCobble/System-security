@@ -1,107 +1,107 @@
-
+Description des Éléments du diagramme de classes UML détaillé
 
 XSDFile
 Cette classe représente un fichier XSD et permet de charger, valider, et comparer deux fichiers XSD.
 
 Attributs :
+    path: str — Chemin du fichier XSD.
+    schema: str — Contenu du schéma XSD.
+    version: str — Version du schéma.
+    security_manager: SecurityManager — Instance du gestionnaire de sécurité pour gérer l'accès et l'intégrité du fichier.
+    audit_logger: AuditLogger — Instance pour enregistrer les événements et actions effectuées sur ce fichier.
 
-path: str — Chemin du fichier XSD.
-schema: str — Contenu du schéma XSD.
-version: str — Version du schéma.
-security_manager: SecurityManager — Instance du gestionnaire de sécurité pour gérer l'accès et l'intégrité du fichier.
-audit_logger: AuditLogger — Instance pour enregistrer les événements et actions effectuées sur ce fichier.
 Méthodes :
+    load(): None — Charge le fichier XSD à partir du chemin spécifié.
+    validate(): bool — Valide le schéma par rapport à des règles définies, en utilisant éventuellement des vérifications de sécurité.
+    get_elements(): List[Element] — Retourne la liste des éléments définis dans le XSD.
+    compare(other: XSDFile): List[Inconsistency] — Compare l'instance actuelle avec une autre instance de XSDFile et retourne une liste d'incohérences.
+    log_action(action: str): None — Enregistre une action (comme validation ou comparaison) via le AuditLogger.
 
-load(): None — Charge le fichier XSD à partir du chemin spécifié.
-validate(): bool — Valide le schéma par rapport à des règles définies, en utilisant éventuellement des vérifications de sécurité.
-get_elements(): List[Element] — Retourne la liste des éléments définis dans le XSD.
-compare(other: XSDFile): List[Inconsistency] — Compare l'instance actuelle avec une autre instance de XSDFile et retourne une liste d'incohérences.
-log_action(action: str): None — Enregistre une action (comme validation ou comparaison) via le AuditLogger.
 Element
 Représente un élément du fichier XSD ou XML.
 
 Attributs :
+    name: str — Nom de l'élément.
+    type: str — Type de l'élément (e.g., string, int).
+    minOccurs: int — Nombre minimum d'occurrences de l'élément.
+    maxOccurs: int — Nombre maximum d'occurrences de l'élément.
+    attributes: List[Attribute] — Liste des attributs de l'élément.
+    children: List[Element] — Liste des éléments enfants.
 
-name: str — Nom de l'élément.
-type: str — Type de l'élément (e.g., string, int).
-minOccurs: int — Nombre minimum d'occurrences de l'élément.
-maxOccurs: int — Nombre maximum d'occurrences de l'élément.
-attributes: List[Attribute] — Liste des attributs de l'élément.
-children: List[Element] — Liste des éléments enfants.
 Méthodes :
+    validate_constraints(): bool — Valide les contraintes définies sur l'élément (e.g., minOccurs, maxOccurs).
+    compare(other: Element): List[Inconsistency] — Compare l'élément actuel avec un autre élément et retourne une liste d'incohérences.
+    to_xml(): str — Convertit l'élément en une chaîne XML.
 
-validate_constraints(): bool — Valide les contraintes définies sur l'élément (e.g., minOccurs, maxOccurs).
-compare(other: Element): List[Inconsistency] — Compare l'élément actuel avec un autre élément et retourne une liste d'incohérences.
-to_xml(): str — Convertit l'élément en une chaîne XML.
 Attribute
 Représente un attribut associé à un élément XML ou XSD.
 
 Attributs :
+    name: str — Nom de l'attribut.
+    type: str — Type de l'attribut (e.g., string, int).
+    restrictions: str — Restrictions ou règles spécifiques appliquées à l'attribut (e.g., longueur maximale).
 
-name: str — Nom de l'attribut.
-type: str — Type de l'attribut (e.g., string, int).
-restrictions: str — Restrictions ou règles spécifiques appliquées à l'attribut (e.g., longueur maximale).
 Méthodes :
+    validate(): bool — Valide l'attribut en fonction de ses restrictions.
+    compare(other: Attribute): bool — Compare l'attribut actuel avec un autre attribut et retourne si ils diffèrent.
+    to_xml(): str — Convertit l'attribut en une chaîne XML.
 
-validate(): bool — Valide l'attribut en fonction de ses restrictions.
-compare(other: Attribute): bool — Compare l'attribut actuel avec un autre attribut et retourne si ils diffèrent.
-to_xml(): str — Convertit l'attribut en une chaîne XML.
 XML
 Représente une instance XML, incluant un élément racine et les espaces de noms utilisés dans le fichier XML.
 
 Attributs :
-
-root_element: Element — Référence à l'élément racine de l'instance XML.
-namespaces: Dict[str, str] — Dictionnaire pour gérer les espaces de noms utilisés dans le fichier XML.
+    root_element: Element — Référence à l'élément racine de l'instance XML.
+    namespaces: Dict[str, str] — Dictionnaire pour gérer les espaces de noms utilisés dans le fichier XML.
 Méthodes :
+    load_from_file(path: str): None — Charge un fichier XML à partir d'un chemin spécifié.
+    validate(): bool — Valide l'instance XML par rapport à un fichier XSD.
+    get_elements(): List[Element] — Retourne la liste des éléments dans l'instance XML.
+    compare(other: XML): List[Inconsistency] — Compare l'instance actuelle avec une autre instance de XML et retourne une liste d'incohérences.
 
-load_from_file(path: str): None — Charge un fichier XML à partir d'un chemin spécifié.
-validate(): bool — Valide l'instance XML par rapport à un fichier XSD.
-get_elements(): List[Element] — Retourne la liste des éléments dans l'instance XML.
-compare(other: XML): List[Inconsistency] — Compare l'instance actuelle avec une autre instance de XML et retourne une liste d'incohérences.
 Inconsistency
 Représente une incohérence trouvée lors de la comparaison de fichiers XML ou XSD.
 
 Attributs :
-
-description: str — Description de l'incohérence détectée.
-element: Element — Référence à l'élément concerné (s'il y a lieu).
-attribute: Attribute — Référence à l'attribut concerné (s'il y a lieu).
+    description: str — Description de l'incohérence détectée.
+    element: Element — Référence à l'élément concerné (s'il y a lieu).
+    attribute: Attribute — Référence à l'attribut concerné (s'il y a lieu).
 Méthodes :
+    __str__(): str — Représentation sous forme de chaîne de l'incohérence pour un affichage lisible.
 
-__str__(): str — Représentation sous forme de chaîne de l'incohérence pour un affichage lisible.
+
 Classes de Sécurité et de Journalisation
+
 SecurityManager
 Cette classe gère la sécurité des fichiers et des opérations dans le projet.
 
 Méthodes :
+    check_access(file: str): bool — Vérifie que l'accès au fichier est autorisé pour l'utilisateur.
+    validate_integrity(file: str): bool — Valide l'intégrité du fichier XSD ou XML pour s'assurer qu'il n'a pas été altéré.
+    authenticate_user(user: str): bool — Authentifie l'utilisateur avant de permettre des actions sensibles.
 
-check_access(file: str): bool — Vérifie que l'accès au fichier est autorisé pour l'utilisateur.
-validate_integrity(file: str): bool — Valide l'intégrité du fichier XSD ou XML pour s'assurer qu'il n'a pas été altéré.
-authenticate_user(user: str): bool — Authentifie l'utilisateur avant de permettre des actions sensibles.
 AuditLogger
 Gère la journalisation des événements et des erreurs pour garder un historique des actions.
 
 Méthodes :
+    log_event(event: str): None — Enregistre un événement important (comme une validation ou une comparaison).
+    log_error(error: str): None — Enregistre une erreur ou une exception.
 
-log_event(event: str): None — Enregistre un événement important (comme une validation ou une comparaison).
-log_error(error: str): None — Enregistre une erreur ou une exception.
+
 Exceptions
 InvalidFileException
 Cette exception est levée lorsque le fichier XSD ou XML est invalide ou corrompu.
 
 Méthodes :
+    __init__(msg: str): None — Initialise l'exception avec un message personnalisé.
 
-__init__(msg: str): None — Initialise l'exception avec un message personnalisé.
 UnauthorizedAccessException
 Cette exception est levée en cas de tentative d'accès non autorisé à une ressource (fichier ou opération).
 
 Méthodes :
+    __init__(msg: str): None — Initialise l'exception avec un message personnalisé.
 
-__init__(msg: str): None — Initialise l'exception avec un message personnalisé.
 FileIntegrityException
 Cette exception est levée lorsqu'une altération ou corruption du fichier est détectée.
 
 Méthodes :
-
-__init__(msg: str): None — Initialise l'exception avec un message personnalisé.
+    __init__(msg: str): None — Initialise l'exception avec un message personnalisé.
