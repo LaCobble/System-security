@@ -1,41 +1,44 @@
 +--------------------------------+
-|            XSDFile            |
+|            XSDFile             |
 +--------------------------------+
-| - path: str                   |
-| - schema: str                 |
-| - version: str                |
+| - path: str                    |
+| - schema: str                  |
+| - version: str                 |
+| - security_manager: SecurityManager  |
+| - audit_logger: AuditLogger         |
 +--------------------------------+
 | + load(): None                 |
 | + validate(): bool             |
-| + get_elements(): List[Element]|
+| + get_elements(): List[Element] |
 | + compare(other: XSDFile): List[Inconsistency]|
+| + log_action(action: str): None |
 +--------------------------------+
 
 +--------------------------------+
 |            Element             |
 +--------------------------------+
-| - name: str                   |
-| - type: str                   |
-| - minOccurs: int              |
-| - maxOccurs: int              |
-| - attributes: List[Attribute] |
-| - children: List[Element]     |
+| - name: str                    |
+| - type: str                    |
+| - minOccurs: int               |
+| - maxOccurs: int               |
+| - attributes: List[Attribute]  |
+| - children: List[Element]      |
 +--------------------------------+
-| + validate_constraints(): bool  |
+| + validate_constraints(): bool |
 | + compare(other: Element): List[Inconsistency]|
-| + to_xml(): str               |
+| + to_xml(): str                |
 +--------------------------------+
 
 +--------------------------------+
 |           Attribute            |
 +--------------------------------+
-| - name: str                   |
-| - type: str                   |
-| - restrictions: str           |
+| - name: str                    |
+| - type: str                    |
+| - restrictions: str            |
 +--------------------------------+
 | + validate(): bool             |
 | + compare(other: Attribute): bool|
-| + to_xml(): str               |
+| + to_xml(): str                |
 +--------------------------------+
 
 +--------------------------------+
@@ -46,16 +49,49 @@
 +--------------------------------+
 | + load_from_file(path: str): None|
 | + validate(): bool             |
-| + get_elements(): List[Element]|
-| + compare(other: XML): List[Inconsistency]|
+| + get_elements(): List[Element] |
+| + compare(other: XML): List[Inconsistency] |
 +--------------------------------+
 
 +--------------------------------+
 |        Inconsistency           |
 +--------------------------------+
-| - description: str            |
-| - element: Element            |
+| - description: str             |
+| - element: Element             |
 | - attribute: Attribute         |
 +--------------------------------+
-| + __str__(): str              |
+| + __str__(): str               |
++--------------------------------+
+
++--------------------------------+
+|       SecurityManager          |
++--------------------------------+
+| + check_access(file: str): bool|
+| + validate_integrity(file: str): bool |
+| + authenticate_user(user: str): bool |
++--------------------------------+
+
++--------------------------------+
+|        AuditLogger             |
++--------------------------------+
+| + log_event(event: str): None  |
+| + log_error(error: str): None  |
++--------------------------------+
+
++--------------------------------+
+|   InvalidFileException (exc)   |
++--------------------------------+
+| + __init__(msg: str): None     |
++--------------------------------+
+
++--------------------------------+
+| UnauthorizedAccessException (exc)|
++--------------------------------+
+| + __init__(msg: str): None     |
++--------------------------------+
+
++--------------------------------+
+|   FileIntegrityException (exc) |
++--------------------------------+
+| + __init__(msg: str): None     |
 +--------------------------------+

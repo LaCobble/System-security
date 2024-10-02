@@ -3,10 +3,13 @@
 +--------------------------------+
 | - targetNamespace: str         |
 | - version: str                 |
+| - security_manager: SecurityManager|
+| - audit_logger: AuditLogger    |
 +--------------------------------+
-| + add_element(element: Element) |
-| + add_attribute(attribute: Attribute) |
+| + add_element(element: Element)|
+| + add_attribute(attribute: Attribute)|
 | + validate(): bool             |
+| + log_action(action: str): None|
 +--------------------------------+
 
 +--------------------------------+
@@ -20,7 +23,7 @@
 | - children: List[Element]     |
 | - parent: Element (optional)  |
 +--------------------------------+
-| + validate_constraints(): bool  |
+| + validate_constraints(): bool |
 | + compare(other: Element): List[Inconsistency]|
 | + to_xml(): str               |
 +--------------------------------+
@@ -44,10 +47,13 @@
 | - root_element: Element        |
 | - namespaces: Dict[str, str]   |
 | - schema: Schema               |
+| - security_manager: SecurityManager|
+| - audit_logger: AuditLogger    |
 +--------------------------------+
 | + load_from_file(path: str): None|
 | + validate(): bool             |
 | + compare(other: Document): List[Inconsistency]|
+| + log_action(action: str): None|
 +--------------------------------+
 
 +--------------------------------+
@@ -57,6 +63,40 @@
 | - element: Element            |
 | - attribute: Attribute         |
 | - severity: str               |
+| - timestamp: datetime         |
 +--------------------------------+
 | + __str__(): str              |
++--------------------------------+
+
++--------------------------------+
+|        SecurityManager         |
++--------------------------------+
+| + check_access(file: str): bool|
+| + validate_integrity(file: str): bool|
+| + authenticate_user(user: str): bool|
++--------------------------------+
+
++--------------------------------+
+|          AuditLogger           |
++--------------------------------+
+| + log_event(event: str): None  |
+| + log_error(error: str): None  |
++--------------------------------+
+
++--------------------------------+
+|    InvalidFileException        |
++--------------------------------+
+| + __init__(msg: str): None     |
++--------------------------------+
+
++--------------------------------+
+|  UnauthorizedAccessException   |
++--------------------------------+
+| + __init__(msg: str): None     |
++--------------------------------+
+
++--------------------------------+
+|   FileIntegrityException       |
++--------------------------------+
+| + __init__(msg: str): None     |
 +--------------------------------+
