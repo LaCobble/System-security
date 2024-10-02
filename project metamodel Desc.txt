@@ -1,56 +1,84 @@
 Description des Éléments du Métamodèle
+
 Schema
-
 Attributs :
-targetNamespace: Le namespace cible du schéma.
-version: Version du schéma.
+    targetNamespace: Le namespace cible du schéma.
+    version: Version du schéma.
+    security_manager: Instance de la classe SecurityManager pour gérer la sécurité.
+    audit_logger: Instance de la classe AuditLogger pour la journalisation des événements.
 Méthodes :
-add_element(element: Element): Ajoute un élément au schéma.
-add_attribute(attribute: Attribute): Ajoute un attribut au schéma.
-validate(): Valide le schéma.
+    add_element(element: Element): Ajoute un élément au schéma.
+    add_attribute(attribute: Attribute): Ajoute un attribut au schéma.
+    validate(): Valide le schéma.
+    log_action(action: str): Journalise une action avec l'aide de l'AuditLogger.
+
 Element
-
 Attributs :
-name: Nom de l'élément.
-type: Type de l'élément.
-minOccurs: Nombre minimum d'occurrences.
-maxOccurs: Nombre maximum d'occurrences.
-attributes: Liste des attributs de l'élément.
-children: Liste des éléments enfants.
-parent: Référence à l'élément parent (facultatif).
+    name: Nom de l'élément.
+    type: Type de l'élément.
+    minOccurs: Nombre minimum d'occurrences de l'élément.
+    maxOccurs: Nombre maximum d'occurrences de l'élément.
+    attributes: Liste des attributs de l'élément.
+    children: Liste des éléments enfants.
+    parent: Référence à l'élément parent (facultatif).
 Méthodes :
-validate_constraints(): Valide les contraintes de l'élément.
-compare(other: Element): Compare l'élément avec un autre élément pour détecter les incohérences.
-to_xml(): Convertit l'élément en XML.
+    validate_constraints(): Valide les contraintes de l'élément.
+    compare(other: Element): Compare l'élément avec un autre pour détecter les incohérences.
+    to_xml(): Convertit l'élément en XML.
+
 Attribute
-
 Attributs :
-name: Nom de l'attribut.
-type: Type de l'attribut.
-restrictions: Restrictions appliquées à l'attribut.
-parent: Référence à l'élément parent.
+    name: Nom de l'attribut.
+    type: Type de l'attribut.
+    restrictions: Restrictions appliquées à l'attribut.
+    parent: Référence à l'élément parent.
 Méthodes :
-validate(): Valide l'attribut.
-compare(other: Attribute): Compare l'attribut avec un autre attribut.
-to_xml(): Convertit l'attribut en XML.
+    validate(): Valide l'attribut.
+    compare(other: Attribute): Compare l'attribut avec un autre pour détecter les incohérences.
+    to_xml(): Convertit l'attribut en XML.
+
 Document
-
 Attributs :
-root_element: Référence à l'élément racine du document XML.
-namespaces: Dictionnaire pour gérer les espaces de noms.
-schema: Référence au schéma associé.
+    root_element: Référence à l'élément racine du document XML.
+    namespaces: Dictionnaire pour gérer les espaces de noms.
+    schema: Référence au schéma associé.
+    security_manager: Instance de la classe SecurityManager pour assurer la sécurité du document.
+    audit_logger: Instance de la classe AuditLogger pour la journalisation des actions.
 Méthodes :
-load_from_file(path: str): Charge un document XML à partir d'un fichier.
-validate(): Valide le document XML par rapport à son schéma.
-compare(other: Document): Compare le document avec un autre document pour détecter les incohérences.
+    load_from_file(path: str): Charge un document XML à partir d'un fichier.
+    validate(): Valide le document XML par rapport à son schéma.
+    compare(other: Document): Compare le document avec un autre pour détecter les incohérences.
+    log_action(action: str): Journalise une action spécifique liée au document.
+
 Inconsistency
-
 Attributs :
-description: Description de l'incohérence.
-element: Référence à l'élément concerné par l'incohérence.
-attribute: Référence à l'attribut concerné par l'incohérence.
-severity: Niveau de gravité de l'incohérence (par exemple, critique, mineur).
+    description: Description de l'incohérence.
+    element: Référence à l'élément concerné par l'incohérence.
+    attribute: Référence à l'attribut concerné par l'incohérence.
+    severity: Niveau de gravité de l'incohérence (exemple: critique, mineur).
+    timestamp: Date et heure à laquelle l'incohérence a été détectée.
 Méthodes :
-__str__(): Retourne une représentation sous forme de chaîne de l'incohérence.
-Utilisation du Métamodèle
-Ce métamodèle sert de base pour structurer les classes et les relations de ton application. Il fournit une vue d'ensemble des concepts clés, tels que les schémas, les éléments, les attributs, les documents et les incohérences. En suivant ce métamodèle, tu peux assurer une cohérence et une clarté dans la conception de ton application, facilitant ainsi son développement et sa maintenance.
+    __str__(): Retourne une représentation sous forme de chaîne de l'incohérence.
+
+SecurityManager
+Méthodes :
+    check_access(file: str): Vérifie si l'utilisateur a accès à un fichier spécifique.
+    validate_integrity(file: str): Valide l'intégrité d'un fichier pour détecter des modifications non autorisées.
+    authenticate_user(user: str): Authentifie un utilisateur avant d'accéder aux fichiers.
+
+AuditLogger
+Méthodes :
+    log_event(event: str): Journalise un événement de sécurité ou d'action.
+    log_error(error: str): Journalise une erreur ou une anomalie dans le système.
+
+InvalidFileException
+Description :
+    Exception levée lorsqu'un fichier XSD ou XML est invalide.
+
+UnauthorizedAccessException
+Description :
+    Exception levée lorsqu'un utilisateur tente d'accéder à un fichier ou une ressource sans autorisation.
+
+FileIntegrityException
+Description :
+    Exception levée lorsqu'un fichier présente des incohérences ou des altérations au niveau de son intégrité.
