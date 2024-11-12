@@ -9,11 +9,16 @@ class XML(XMLInterface):
         self.root_element = root_element
         self.namespaces = namespaces if namespaces is not None else {}  # Correction ici
 
-    def load_from_file(self, path: str) -> None:
-        """Charge un fichier XML à partir d'un chemin spécifié."""
-        tree = ET.parse(path)
-        root = tree.getroot()
-        self.root_element = self._element_from_xml(root)  # Assurez-vous que cela initialise root_element
+    def load_from_file(self, path):
+        try:
+            tree = ET.parse(path)
+            return tree.getroot()  # Renvoie l'élément racine
+        except ET.ParseError as e:
+            print(f"Erreur d'analyse : {e}")
+            return None
+        except Exception as e:
+            print(f"Erreur lors de l'ouverture du fichier : {e}")
+            return None
 
     def _element_from_xml(self, xml_element: ET.Element) -> 'Element':
         """Convertit un élément XML en une instance de Element."""
