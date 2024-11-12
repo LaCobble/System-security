@@ -22,8 +22,17 @@ class XSDFile(XML):
     def load(self):
         if not self.path:
             raise ValueError("Le chemin du fichier est invalide.")
-        xml_element = self.load_from_file(self.path)
-        self.root_element = self._element_from_xml(xml_element)
+
+        try:
+            print(f"Tentative de chargement du fichier : {self.path}")  # Impression pour le débogage
+            xml_element = self.load_from_file(self.path)
+            if xml_element is None:
+                raise ValueError("Le fichier XML est vide ou n'a pas pu être chargé.")
+            self.root_element = self._element_from_xml(xml_element)
+
+        except Exception as e:
+            print(f"Erreur lors du chargement du fichier : {e}")
+            raise
 
     def validate(self) -> bool:
         """Valide le schéma XSD par rapport à des règles définies."""
