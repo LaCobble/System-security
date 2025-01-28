@@ -38,18 +38,13 @@ class XMLValidationApp:
             xml_file.load_from_file(xml_path)
 
             # Validation
-            inconsistencies = xml_file.validate(xml_path, xsd_path)
-            if len(inconsistencies) != 0:
+            if not xsd_file.validate(xml_file):
                 self.audit_logger.log_error(f"Échec de validation pour {xsd_path} ou {xml_path}")
-                for inc in inconsistencies: 
-                    print(str(inc))
+                print(f"Échec de validation pour {xsd_path} ou {xml_path}")
             else:
                 self.audit_logger.log(f"Fichier {xml_path} validé avec succès !")
                 print(f"Fichier {xml_file} validé avec succès !")
             
-            # Journaliser les incohérences
-            for inc in inconsistencies:
-                self.audit_logger.log_error(str(inc))
 
         except Exception as e:
             self.audit_logger.log_error(f"Erreur lors de la validation : {str(e)}")

@@ -29,21 +29,7 @@ class XML(XMLInterface):
 
     def validate(self, xml_path: str, xsd_path: str) -> bool:
         """Valide l'instance XML par rapport à un fichier XSD."""
-
-        # Charger le fichier XML
-        xml = XML(root_element=None)
-        xml.load_from_file(xml_path)
-
-        # Valider le XML par rapport au XSD
-        if xml.validate(xsd_file):
-            print("Le fichier XML est valide selon le XSD.")
-            return inconsistency
-        else:
-            print("Le fichier XML n'est pas valide selon le XSD.")
-            inconsistencies = xml.compare(xsd_file.to_xml())
-            for inconsistency in inconsistencies:
-                print(inconsistency)
-                return inconsistency
+        pass
 
     def get_elements(self) -> List['Element']:
         """Retourne la liste des éléments dans l'instance XML."""
