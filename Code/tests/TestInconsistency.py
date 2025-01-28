@@ -1,7 +1,7 @@
 import unittest
 from Inconsistency import Inconsistency
 from Attribute import Attribute
-from Element import Element  # Ajoutez ceci
+from Element import Element
 
 class TestInconsistency(unittest.TestCase):
 
