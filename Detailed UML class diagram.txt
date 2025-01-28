@@ -11,7 +11,7 @@
 | + validate(): bool             |
 | + get_elements(): List[Element] |
 | + compare(other: XSDFile): List[Inconsistency]|
-| + log_action(action: str): None |
+| +      |
 +--------------------------------+
 
 +--------------------------------+

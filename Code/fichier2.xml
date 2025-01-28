@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Catalog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="catalog.xsd">
+  <Book ISBN="978-1234567890">
+    <Title>Introduction to XML</Title>
+    <Author>John Doe</Author>
+    <Year>2021</Year>
+    <Price>29.99</Price>
+    <Genre>Programming</Genre>
+  </Book>
+  <Book ISBN="978-0987654321">
+    <Title>Advanced XSD Design</Title>
+    <Author>Jane Smith</Author>
+    <Year>2023</Year>
+    <Price>45.50</Price>
+    <Genre>Technology</Genre>
+  </Book>
+</Catalog>

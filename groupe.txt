@@ -1,0 +1,15 @@
+Membres :
+	MAUCOURT Pierre-Yves
+	BRION Paul
+	
+Projet choisi :
+	Projet de détection d'incohérence entre fichiers XSD
+	
+Planification des étapes :
+	- diagrammes de classes et méta-modèles 
+	- programmation des classes
+	- programmation des tests
+	- programmation du main
+	
+Étapes où nous sommes :
+	programmation du main
