@@ -28,14 +28,25 @@ class XSDFile(XML):
         xml_element = self.load_from_file(self.path)
         #self.root_element = self._element_from_xml(xml_element)
 
-    def validate(self) -> bool:
+    def validate(self, xml_file: XML) -> bool:
         """Valide le schéma XSD par rapport à des règles définies."""
+        valid = bool()
         # Utiliser les vérifications de sécurité si nécessaire
-        if not self.security_manager.check_access(self.path):
+        if not self.security_manager.check_access('admin', self.path):
             return False
 
-        # Logique de validation ici
-        return True  # Placeholder
+        xml_elements = xml_file.get_elements()
+        xsd_elements = self.get_elements()
+        for xml_element in xml_elements:
+            matching_xsd_element = next((xsd_element for xsd_element in xsd_elements if xsd_element.name == xml_element.name), None)
+            if not matching_xsd_element:
+                print(f"L'élément {xml_element.name} n'est pas défini dans le schéma XSD.")
+                valid = False
+            if not matching_xsd_element.validate(xml_element):
+                print(f"L'élément {xml_element.name} ne correspond pas à sa description dans le schéma XSD.")
+                valid = False
+            valid = True
+        return valid
 
     def get_elements(self) -> List['Element']:
         """Retourne la liste des éléments définis dans le XSD."""
