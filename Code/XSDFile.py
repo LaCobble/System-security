@@ -2,6 +2,9 @@ from typing import List, Optional
 from interfaces.XSDFileInterface import XSDFileInterface
 from XML import XML
 from Inconsistency import Inconsistency
+from SecurityManager import SecurityManager
+from AuditLogger import AuditLogger
+from Element import Element
 
 class XSDFile(XML):
     def __init__(self, path: str, schema: str, version: str, 
@@ -23,7 +26,7 @@ class XSDFile(XML):
         if not self.path:
             raise ValueError("Le chemin du fichier est invalide.")
         xml_element = self.load_from_file(self.path)
-        self.root_element = self._element_from_xml(xml_element)
+        #self.root_element = self._element_from_xml(xml_element)
 
     def validate(self) -> bool:
         """Valide le schéma XSD par rapport à des règles définies."""
@@ -48,3 +51,15 @@ class XSDFile(XML):
     def log_action(self, action: str) -> None:
         """Enregistre une action via le AuditLogger."""
         self.audit_logger.log(action)
+
+    def set_security(self, security_manager: SecurityManager, audit_logger: AuditLogger) -> None:
+        """Définit le SecurityManager pour le XSDFile."""
+        self.security_manager = security_manager
+        self.audit_logger = audit_logger
+        
+    def set_schema(self, schema: str):
+        """Définit le schéma pour le XSDFile."""
+        self.schema = schema
+    def set_version(self, version: str):
+        """Définit la version pour le XSDFile."""
+        self.version = version

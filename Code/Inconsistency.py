@@ -1,4 +1,5 @@
 from interfaces.InconsistencyInterface import InconsistencyInterface
+from Attribute import Attribute
 
 class Inconsistency(InconsistencyInterface):
     def __init__(self, description: str, element: 'Element' = None, attribute: 'Attribute' = None, message: str = ""):

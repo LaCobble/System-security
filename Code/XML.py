@@ -3,6 +3,8 @@ from typing import List, Dict, Optional
 from Attribute import Attribute
 from Element import Element
 import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import Element as EL
+from Inconsistency import Inconsistency
 
 class XML(XMLInterface):
     def __init__(self, root_element: 'Element', namespaces: Optional[Dict[str, str]] = None):
@@ -15,9 +17,9 @@ class XML(XMLInterface):
         root = tree.getroot()
         self.root_element = self._element_from_xml(root)  # Assurez-vous que cela initialise root_element
 
-    def _element_from_xml(self, xml_element: ET.Element) -> 'Element':
+    def _element_from_xml(self, xml_element: EL) -> Element:
         """Convertit un élément XML en une instance de Element."""
-        name = xml_element.tag
+        name = xml_element
         type = "unknown"
         minOccurs = 1
         maxOccurs = 1
@@ -25,10 +27,23 @@ class XML(XMLInterface):
         children = [self._element_from_xml(child) for child in xml_element]
         return Element(name, type, minOccurs, maxOccurs, attributes, children)
 
-    def validate(self) -> bool:
+    def validate(self, xml_path: str, xsd_path: str) -> bool:
         """Valide l'instance XML par rapport à un fichier XSD."""
-        # Logique de validation à implémenter selon les règles XSD
-        return True  # Placeholder
+
+        # Charger le fichier XML
+        xml = XML(root_element=None)
+        xml.load_from_file(xml_path)
+
+        # Valider le XML par rapport au XSD
+        if xml.validate(xsd_file):
+            print("Le fichier XML est valide selon le XSD.")
+            return inconsistency
+        else:
+            print("Le fichier XML n'est pas valide selon le XSD.")
+            inconsistencies = xml.compare(xsd_file.to_xml())
+            for inconsistency in inconsistencies:
+                print(inconsistency)
+                return inconsistency
 
     def get_elements(self) -> List['Element']:
         """Retourne la liste des éléments dans l'instance XML."""
