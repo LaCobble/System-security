@@ -19,7 +19,7 @@ class XML(XMLInterface):
 
     def _element_from_xml(self, xml_element: EL) -> Element:
         """Convertit un élément XML en une instance de Element."""
-        name = xml_element.attrib.get('name', xml_element.tag.split('}')[-1]) #xml_element.tag.split('}')[-1] if '}' in xml_element.tag else xml_element.tag
+        name = xml_element.attrib.get('name', xml_element.tag.split('}')[-1]) 
         type = "unknown"
         minOccurs = 1
         maxOccurs = 1

@@ -32,11 +32,9 @@ class XMLValidationApp:
             # Charger le XSD
             xsd_file = XSDFile(xsd_path, '', '1.0', self.security_manager, self.audit_logger)
             xsd_file.load()
-
             # Charger le XML
             xml_file = XML(None)
             xml_file.load_from_file(xml_path)
-
             # Validation
             if not xsd_file.validate(xml_file):
                 self.audit_logger.log_error(f"Échec de validation pour {xsd_path} ou {xml_path}")
@@ -44,8 +42,6 @@ class XMLValidationApp:
             else:
                 self.audit_logger.log_event(f"Fichier {xml_path} validé avec succès !")
                 print(f"Fichier {xml_file} validé avec succès !")
-            
-
         except Exception as e:
             self.audit_logger.log_error(f"Erreur lors de la validation : {str(e)}")
 
@@ -67,19 +63,19 @@ class XMLValidationApp:
                 schema='', 
                 version='1.0', 
                 security_manager=self.security_manager, 
-                audit_logger=self.audit_logger
+                audit_logger=self.audit_logger,
+                name=xsd_path1
             )
             xsd_file2 = XSDFile(
                 path=xsd_path2, 
                 schema='', 
                 version='1.0', 
                 security_manager=self.security_manager, 
-                audit_logger=self.audit_logger
+                audit_logger=self.audit_logger,
+                name=xsd_path2
             )
-
             xsd_file1.load()
             xsd_file2.load()
-
             # Comparer les XSD
             inconsistencies = xsd_file1.compare(xsd_file2)
             
