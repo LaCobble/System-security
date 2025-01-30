@@ -5,6 +5,14 @@ class Attribute(AttributeInterface):
         self.name = name
         self.type = type
         self.restrictions = restrictions
+        
+    def __str__(self) -> str:
+        """Représentation textuelle simplifiée de l'instance."""
+        return f"Attribute(name={self.name}, type={self.type}, restrictions={self.restrictions})"
+
+    def __repr__(self) -> str:
+        """Représentation officielle de l'instance pour le débogage."""
+        return f"<Attribute(name={self.name}, type={self.type}, restrictions={self.restrictions})>"
 
     def validate(self) -> bool:
         """Valide l'attribut en fonction de ses restrictions."""
