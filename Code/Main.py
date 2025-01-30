@@ -42,7 +42,7 @@ class XMLValidationApp:
                 self.audit_logger.log_error(f"Échec de validation pour {xsd_path} ou {xml_path}")
                 print(f"Échec de validation pour {xsd_path} ou {xml_path}")
             else:
-                self.audit_logger.log(f"Fichier {xml_path} validé avec succès !")
+                self.audit_logger.log_event(f"Fichier {xml_path} validé avec succès !")
                 print(f"Fichier {xml_file} validé avec succès !")
             
 

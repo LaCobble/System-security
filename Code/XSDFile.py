@@ -31,18 +31,17 @@ class XSDFile(XML):
     def validate(self, xml_file: XML) -> bool:
         """Valide le schéma XSD par rapport à des règles définies."""
         valid = bool()
-        # Utiliser les vérifications de sécurité si nécessaire
-        if not self.security_manager.check_access('admin', self.path):
-            return False
-
         xml_elements = xml_file.get_elements()
         xsd_elements = self.get_elements()
+        #print(xml_elements[0])
+        #print(xsd_elements[0])
         for xml_element in xml_elements:
-            matching_xsd_element = next((xsd_element for xsd_element in xsd_elements if xsd_element.name == xml_element.name), None)
+            matching_xsd_element = next((xsd_element for xsd_element in xsd_elements if xsd_element.name == xml_element.name))
+            print('saucisse')
             if not matching_xsd_element:
                 print(f"L'élément {xml_element.name} n'est pas défini dans le schéma XSD.")
                 valid = False
-            if not matching_xsd_element.validate(xml_element):
+            if not matching_xsd_element.validate_constraints():
                 print(f"L'élément {xml_element.name} ne correspond pas à sa description dans le schéma XSD.")
                 valid = False
             valid = True
@@ -61,7 +60,7 @@ class XSDFile(XML):
 
     def log_action(self, action: str) -> None:
         """Enregistre une action via le AuditLogger."""
-        self.audit_logger.log(action)
+        self.audit_logger.log_event(action)
 
     def set_security(self, security_manager: SecurityManager, audit_logger: AuditLogger) -> None:
         """Définit le SecurityManager pour le XSDFile."""

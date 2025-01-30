@@ -15,11 +15,11 @@ class XML(XMLInterface):
         """Charge un fichier XML à partir d'un chemin spécifié."""
         tree = ET.parse(path)
         root = tree.getroot()
-        self.root_element = self._element_from_xml(root)  # Assurez-vous que cela initialise root_element
+        self.root_element = self._element_from_xml(root)  
 
     def _element_from_xml(self, xml_element: EL) -> Element:
         """Convertit un élément XML en une instance de Element."""
-        name = xml_element
+        name = xml_element.attrib.get('name', xml_element.tag.split('}')[-1]) #xml_element.tag.split('}')[-1] if '}' in xml_element.tag else xml_element.tag
         type = "unknown"
         minOccurs = 1
         maxOccurs = 1

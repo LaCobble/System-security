@@ -13,6 +13,12 @@ class Element(ElementInterface):
         self.maxOccurs = maxOccurs
         self.attributes = attributes if attributes is not None else []
         self.children = children if children is not None else []
+        
+    def __repr__(self):
+        return f"Element(name='{self.name}', type='{self.type}', attributes='{self.attributes}', children='{self.children}')"
+
+    def __str__(self):
+        return f"Element '{self.name}' de type '{self.type}', attributes='{self.attributes}', children='{self.children}'"
 
     def validate_constraints(self) -> bool:
         """Valide les contraintes de l'élément."""
