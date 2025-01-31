@@ -1,95 +1,75 @@
 import unittest
-from unittest.mock import MagicMock, patch
+import os
+import xml.etree.ElementTree as ET
+from unittest.mock import MagicMock
 from XSDFile import XSDFile
-from XML import XML
+from AuditLogger import AuditLogger
+from SecurityManager import SecurityManager
 
 class TestXSDFile(unittest.TestCase):
-
     def setUp(self):
-        """Configurer une instance de XSDFile pour les tests."""
-        self.security_manager = MagicMock()
-        self.audit_logger = MagicMock()
+        """Initialisation des objets avant chaque test."""
+        self.security_manager = MagicMock(spec=SecurityManager)
+        self.audit_logger = MagicMock(spec=AuditLogger)
+        self.audit_logger.log = MagicMock()
+        self.temp_xsd_path = "test_temp.xsd"
+        with open(self.temp_xsd_path, "w", encoding="utf-8") as f:
+            f.write("""<?xml version="1.0"?>
+            <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                <xs:element name="Person" type="xs:string"/>
+                <xs:element name="FirstName" type="xs:string"/>
+            </xs:schema>""")
 
-        # Simulez le chargement d'un fichier XML
-        self.xsd_file = XSDFile(
-            path="dummy_path.xsd",
-            schema="<schema></schema>",
-            version="1.0",
-            security_manager=self.security_manager,
-            audit_logger=self.audit_logger,
-            name="dummy_file"
-        )
+        self.xsd_file = XSDFile(self.temp_xsd_path, "", "1.0", self.security_manager, self.audit_logger)
+        self.xsd_file.load()
 
-        # Utiliser patch pour simuler load_from_file
-        with patch.object(XML, 'load_from_file') as mock_load_from_file:
-            # Simuler un élément XML valide
-            mock_xml_element = MagicMock()
-            mock_xml_element.tag = "root"  # Simuler un tag valide
-            mock_load_from_file.return_value = mock_xml_element
-
-            # Charger le fichier XSD fictif
-            self.xsd_file.load()  # Cela devrait maintenant initialiser root_element
+    def tearDown(self):
+        """Suppression du fichier temporaire après chaque test."""
+        if os.path.exists(self.temp_xsd_path):
+            os.remove(self.temp_xsd_path)
 
     def test_load(self):
         """Teste la méthode load."""
-        with patch.object(XML, 'load_from_file') as mock_load_from_file:
-            # Simuler un élément XML valide
-            mock_xml_element = MagicMock()
-            mock_xml_element.tag = "root"  # Simuler un tag valide
-            mock_load_from_file.return_value = mock_xml_element
-
-            self.xsd_file.load()  # Appel de la méthode load
-
-            # Vérifiez que root_element n'est pas None après le chargement
-            self.assertIsNotNone(self.xsd_file.root_element, "root_element doit être initialisé après le chargement.")
-
-            # Assurez-vous que la méthode de chargement du parent a été appelée
-            mock_load_from_file.assert_called_once_with(self.xsd_file.path)
-
-    def test_validate_access_denied(self):
-        """Teste la méthode validate avec accès refusé."""
-        self.security_manager.check_access.return_value = False
-
-        result = self.xsd_file.validate()
-        self.assertFalse(result)
-
-    def test_validate_success(self):
-        """Teste la méthode validate avec succès."""
-        self.security_manager.check_access.return_value = True
-
-        result = self.xsd_file.validate()
-        self.assertTrue(result)
+        self.assertIsNotNone(self.xsd_file.root_element, "root_element doit être initialisé après le chargement.")
 
     def test_get_elements(self):
         """Teste la méthode get_elements."""
         elements = self.xsd_file.get_elements()
-        self.assertEqual(elements, self.xsd_file.root_element.children)
+
+        self.assertIn("Person", elements)
+        self.assertIn("FirstName", elements)
+
+    def test_validate_success(self):
+        """Teste la méthode validate avec succès."""
+        mock_xml = MagicMock()
+        mock_xml.get_elements.return_value = ["Person", "FirstName"]
+        self.security_manager.check_access.return_value = True
+
+        result = self.xsd_file.validate(mock_xml)
+
+        self.assertTrue(result, "La validation devrait réussir.")
+
+    def test_validate_access_denied(self):
+        """Teste la méthode validate avec accès refusé."""
+        mock_xml = MagicMock()
+        self.security_manager.check_access.return_value = False
+
+        result = self.xsd_file.validate(mock_xml)
+        self.assertFalse(result)
 
     def test_compare(self):
         """Teste la méthode compare."""
-        other_xsd_file = XSDFile(
-            path="other_path.xsd",
-            schema="<schema></schema>",
-            version="1.0",
-            security_manager=self.security_manager,
-            audit_logger=self.audit_logger,
-            name="dummy_file"  # Utilisez le même nom
-        )
+        other_xsd = MagicMock()
+        other_xsd.get_elements.return_value = ["Person", "FirstName", "LastName"]
 
-        # Assurez-vous que les deux XSDFile ont des attributs compatibles pour le test
-        self.xsd_file.schema = other_xsd_file.schema
-        self.xsd_file.version = other_xsd_file.version
-        self.xsd_file.name = other_xsd_file.name  # Assurez-vous que le nom est également le même
-
-        inconsistencies = self.xsd_file.compare(other_xsd_file)
-        self.assertEqual(inconsistencies, [])  # Aucune incohérence attendue
+        inconsistencies = self.xsd_file.compare(other_xsd)
+        self.assertIn("Élément ajouté : LastName", inconsistencies)
 
     def test_log_action(self):
         """Teste la méthode log_action."""
-        action = "Validation effectuée"
+        action = "Test action"
         self.xsd_file.log_action(action)
-
         self.audit_logger.log.assert_called_once_with(action)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

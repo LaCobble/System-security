@@ -7,9 +7,10 @@ from xml.etree.ElementTree import Element as EL
 from Inconsistency import Inconsistency
 
 class XML(XMLInterface):
+    """Représente une instance XML avec un élément racine et des espaces de noms."""
     def __init__(self, root_element: 'Element', namespaces: Optional[Dict[str, str]] = None):
         self.root_element = root_element
-        self.namespaces = namespaces if namespaces is not None else {}  # Correction ici
+        self.namespaces = namespaces if namespaces is not None else {}
 
     def load_from_file(self, path: str) -> None:
         """Charge un fichier XML à partir d'un chemin spécifié."""
@@ -19,7 +20,7 @@ class XML(XMLInterface):
 
             if root is None:
                 raise ValueError(f"Erreur : le fichier XML/XSD '{path}' semble vide ou invalide.")
-            
+
             self.root_element = self._element_from_xml(root)
 
         except ET.ParseError as e:
@@ -29,7 +30,7 @@ class XML(XMLInterface):
 
     def _element_from_xml(self, xml_element: EL) -> Element:
         """Convertit un élément XML en une instance de Element."""
-        name = xml_element.attrib.get('name', xml_element.tag.split('}')[-1]) 
+        name = xml_element.attrib.get('name', xml_element.tag.split('}')[-1])
         type = "unknown"
         minOccurs = 1
         maxOccurs = 1

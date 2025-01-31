@@ -1,143 +1,113 @@
-from typing import List, Optional
-from interfaces.XSDFileInterface import XSDFileInterface
-from XML import XML
-from Inconsistency import Inconsistency
-from SecurityManager import SecurityManager
-from AuditLogger import AuditLogger
-from Element import Element
-import xml.etree.ElementTree as ET
 import os
+import xml.etree.ElementTree as ET
+from AuditLogger import AuditLogger
+import re
 
-class XSDFile(XML):
-    def __init__(self, path: str, schema: str, version: str, 
-                 security_manager: 'SecurityManager', 
-                 audit_logger: 'AuditLogger', 
-                 name: str = ""): 
-        root_element = None
-        namespaces = {}
-        super().__init__(root_element, namespaces)
+class XSDFile:
+    """Représente un fichier XSD et fournit des méthodes pour valider un fichier XML par rapport à ce XSD."""
+    def __init__(self, path, schema, version, security_manager, audit_logger, name=""):
+        """
+        Initialise un fichier XSD avec ses paramètres.
 
+        Args:
+            path (str): Chemin du fichier XSD.
+            schema (str): Contenu du schéma XSD (optionnel).
+            version (str): Version du fichier XSD.
+            security_manager: Gestionnaire de sécurité.
+            audit_logger: Gestionnaire de journalisation.
+            name (str): Nom du fichier XSD.
+        """
         self.path = path
         self.schema = schema
         self.version = version
         self.security_manager = security_manager
         self.audit_logger = audit_logger
         self.name = name
+        self.root = None 
+        self.root_element = None
 
     def load(self):
-        """Charge le fichier XSD et parse son contenu."""
-        if os.stat(self.path).st_size == 0:
-            raise ValueError(f"Erreur : Le fichier XSD {self.path} est vide.")            
-            return
-        
-        try:
-            with open(self.path, "r", encoding="utf-8") as f:
-                first_line = f.readline().strip()
-                if not first_line.startswith("<"):
-                    raise ValueError(f"Erreur : Le fichier {self.path} n'est pas un fichier XSD valide.")
+        """
+        Charge le fichier XSD et initialise root_element.
+        """
+        if not os.path.exists(self.path):
+            raise FileNotFoundError(f"Le fichier XSD {self.path} est introuvable.")
 
+        if os.stat(self.path).st_size == 0:
+            raise ValueError(f"Erreur : Le fichier XSD {self.path} est vide.")
+
+        try:
             tree = ET.parse(self.path)
             self.root = tree.getroot()
+            self.root_element = self.root
         except ET.ParseError as e:
-            self.root = None
-            raise ValueError(f"Erreur de parsing du XSD {self.path} : {e}")
+            raise ValueError(f"Erreur de parsing du fichier XSD {self.path} : {e}")
 
-    def validate(self, xml_file: XML) -> bool:
-        """Valide un fichier XML contre ce schéma XSD."""
-        valid = True  # Supposons que le fichier est valide par défaut
-        xml_elements = xml_file.get_elements()
-        xsd_elements = self.get_elements()
+    def remove_namespace(self, tag):
+        """Supprime le namespace d'un élément XML."""
+        return tag.split("}")[-1]
 
-        # Vérification de la correspondance entre XML et XSD
-        for xml_element in xml_elements:
-            try:
-                matching_xsd_element = next((xsd_element for xsd_element in xsd_elements if xsd_element.name == xml_element.name), None)
-
-                if not matching_xsd_element:
-                    print(f"❌ ERREUR : L'élément '{xml_element.name}' n'est pas défini dans le schéma XSD.")
-                    valid = False
-                    continue  # On continue pour vérifier les autres éléments
-
-                if not matching_xsd_element.validate_constraints():
-                    print(f"❌ ERREUR : L'élément '{xml_element.name}' ne respecte pas les contraintes définies dans le XSD.")
-                    valid = False
-
-            except Exception as e:
-                print(f"❌ ERREUR INTERNE : {e}")
-                valid = False
-
-        return valid
-
-    def get_elements(self) -> List[Element]:
-        """Récupère tous les éléments définis dans le fichier XSD."""
+    def get_elements(self):
+        """Retourne une liste des éléments définis dans le XSD."""
         if self.root is None:
             return []
-        
-        namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}
-        elements = self.root.findall(".//xs:element", namespaces)
+        return [el.get("name") for el in self.root.findall(".//xs:element", namespaces={"xs": "http://www.w3.org/2001/XMLSchema"}) if el.get("name")]
 
-        unique_elements = {}
-        for el in elements:
-            name = el.get("name")
-            if name and name not in unique_elements:
-                min_occurs = el.get("minOccurs", "1")  # Valeur par défaut 1 si non spécifiée
-                max_occurs = el.get("maxOccurs", "1")  # Valeur par défaut 1 si non spécifiée
+    def validate(self, xml_file):
+        """
+        Valide un fichier XML par rapport au XSD.
 
-                unique_elements[name] = Element(
-                    name=name, 
-                    type=el.get("type", "xs:string"), 
-                    minOccurs=int(min_occurs) if min_occurs.isdigit() else min_occurs, 
-                    maxOccurs=int(max_occurs) if max_occurs.isdigit() else max_occurs
-                )
+        Args:
+            xml_file (XML): Instance de XML contenant les éléments du fichier XML.
 
-        return list(unique_elements.values())  # Retourner une liste sans doublons
+        Returns:
+            bool: True si la validation est réussie, False sinon.
+        """
+        if not self.security_manager.check_access("admin", self.path):
+            self.audit_logger.log_error(f"Accès refusé au fichier XSD : {self.path}")
+            return False
 
-    def compare(self, other_xsd: 'XSDFile') -> List[Inconsistency]:
-        """Compare ce fichier XSD avec un autre et retourne les différences."""
+        try:
+            xsd_elements = self.get_elements()
+            xml_elements = xml_file.get_elements()
+
+            validation_result = all(elem in xsd_elements for elem in xml_elements)
+
+            if validation_result:
+                self.audit_logger.log_event(f"Validation réussie pour {xml_file.path} contre {self.path}")
+            else:
+                self.audit_logger.log_error(f"Validation échouée : {xml_file.path} ne correspond pas à {self.path}")
+
+            return validation_result
+
+        except Exception as e:
+            self.audit_logger.log_error(f"Erreur lors de la validation : {str(e)}")
+            return False
+
+    def compare(self, other_xsd):
+        """Compare les éléments XSD et détecte les différences."""
+        self_elements = set(self.get_elements())
+        other_elements = set(other_xsd.get_elements())
+
+        added = other_elements - self_elements
+        removed = self_elements - other_elements
+
         inconsistencies = []
+        for el in added:
+            inconsistencies.append(f"Élément ajouté : {el}")
+            self.audit_logger.log_event(f"Incohérence détectée : Élément ajouté : {el}")
 
-        # Debug : Vérifier que les fichiers ont bien des éléments
-        self_elements = self.get_elements()
-        other_elements = other_xsd.get_elements()
-
-        print("📌 DEBUG : Éléments dans", self.path)
-        for el in self_elements:
-            print(f"  - {el.name}")
-
-        print("📌 DEBUG : Éléments dans", other_xsd.path)
-        for el in other_elements:
-            print(f"  - {el.name}")
-
-        if self.root is None or other_xsd.root is None:
-            return [Inconsistency(f"Erreur : un des fichiers XSD est vide ou invalide.", None, None)]
-
-        if not self_elements or not other_elements:
-            inconsistencies.append(Inconsistency("Erreur : un des fichiers XSD n'a pas été chargé correctement.", None, None))
-            return inconsistencies
-
-        # Comparaison des éléments
-        for element in self_elements:
-            if element.name not in [e.name for e in other_elements]:
-                inconsistencies.append(Inconsistency(f"Élément supprimé : {element.name}", element, None))
-
-        for element in other_elements:
-            if element.name not in [e.name for e in self_elements]:
-                inconsistencies.append(Inconsistency(f"Élément ajouté : {element.name}", element, None))
+        for el in removed:
+            inconsistencies.append(f"Élément supprimé : {el}")
+            self.audit_logger.log_event(f"Incohérence détectée : Élément supprimé : {el}")
 
         return inconsistencies
 
-    def log_action(self, action: str) -> None:
-        """Enregistre une action via le AuditLogger."""
-        self.audit_logger.log_event(action)
+    def log_action(self, action):
+        """
+        Enregistre une action dans le journal des événements.
 
-    def set_security(self, security_manager: SecurityManager, audit_logger: AuditLogger) -> None:
-        """Définit le SecurityManager pour le XSDFile."""
-        self.security_manager = security_manager
-        self.audit_logger = audit_logger
-        
-    def set_schema(self, schema: str):
-        """Définit le schéma pour le XSDFile."""
-        self.schema = schema
-    def set_version(self, version: str):
-        """Définit la version pour le XSDFile."""
-        self.version = version
+        Args:
+            action (str): Message décrivant l'action à journaliser.
+        """
+        self.audit_logger.log(action)
