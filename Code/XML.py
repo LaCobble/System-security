@@ -13,9 +13,19 @@ class XML(XMLInterface):
 
     def load_from_file(self, path: str) -> None:
         """Charge un fichier XML à partir d'un chemin spécifié."""
-        tree = ET.parse(path)
-        root = tree.getroot()
-        self.root_element = self._element_from_xml(root)  
+        try:
+            tree = ET.parse(path)
+            root = tree.getroot()
+
+            if root is None:
+                raise ValueError(f"Erreur : le fichier XML/XSD '{path}' semble vide ou invalide.")
+            
+            self.root_element = self._element_from_xml(root)
+
+        except ET.ParseError as e:
+            raise ValueError(f"Erreur de parsing XML : {e}")
+        except FileNotFoundError:
+            raise ValueError(f"Erreur : fichier introuvable '{path}'")
 
     def _element_from_xml(self, xml_element: EL) -> Element:
         """Convertit un élément XML en une instance de Element."""
