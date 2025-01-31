@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Person>
+    <FirstName>John</FirstName>
+    <LastName>Doe</LastName>
+    <Age>30<Age>  <!-- Balise mal fermée -->
+    <Email>john.doe@example.com</Email
+</Person>

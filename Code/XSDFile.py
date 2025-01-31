@@ -5,6 +5,8 @@ from Inconsistency import Inconsistency
 from SecurityManager import SecurityManager
 from AuditLogger import AuditLogger
 from Element import Element
+import xml.etree.ElementTree as ET
+import os
 
 class XSDFile(XML):
     def __init__(self, path: str, schema: str, version: str, 
@@ -23,87 +25,105 @@ class XSDFile(XML):
         self.name = name
 
     def load(self):
-        if not self.path:
-            raise ValueError("Le chemin du fichier est invalide.")
-        self.load_from_file(self.path)
+        """Charge le fichier XSD et parse son contenu."""
+        if os.stat(self.path).st_size == 0:
+            raise ValueError(f"Erreur : Le fichier XSD {self.path} est vide.")            
+            return
+        
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                first_line = f.readline().strip()
+                if not first_line.startswith("<"):
+                    raise ValueError(f"Erreur : Le fichier {self.path} n'est pas un fichier XSD valide.")
+
+            tree = ET.parse(self.path)
+            self.root = tree.getroot()
+        except ET.ParseError as e:
+            self.root = None
+            raise ValueError(f"Erreur de parsing du XSD {self.path} : {e}")
 
     def validate(self, xml_file: XML) -> bool:
-        """Valide le schéma XSD par rapport à des règles définies."""
-        valid = bool()
+        """Valide un fichier XML contre ce schéma XSD."""
+        valid = True  # Supposons que le fichier est valide par défaut
         xml_elements = xml_file.get_elements()
         xsd_elements = self.get_elements()
+
+        # Vérification de la correspondance entre XML et XSD
         for xml_element in xml_elements:
-            matching_xsd_element = next((xsd_element for xsd_element in xsd_elements if xsd_element.name == xml_element.name))
-            if not matching_xsd_element:
-                print(f"L'élément {xml_element.name} n'est pas défini dans le schéma XSD.")
+            try:
+                matching_xsd_element = next((xsd_element for xsd_element in xsd_elements if xsd_element.name == xml_element.name), None)
+
+                if not matching_xsd_element:
+                    print(f"❌ ERREUR : L'élément '{xml_element.name}' n'est pas défini dans le schéma XSD.")
+                    valid = False
+                    continue  # On continue pour vérifier les autres éléments
+
+                if not matching_xsd_element.validate_constraints():
+                    print(f"❌ ERREUR : L'élément '{xml_element.name}' ne respecte pas les contraintes définies dans le XSD.")
+                    valid = False
+
+            except Exception as e:
+                print(f"❌ ERREUR INTERNE : {e}")
                 valid = False
-            if not matching_xsd_element.validate_constraints():
-                print(f"L'élément {xml_element.name} ne correspond pas à sa description dans le schéma XSD.")
-                valid = False
-            valid = True
+
         return valid
 
-    def get_elements(self) -> List['Element']:
-        """Retourne la liste des éléments définis dans le XSD."""
-        # On peut envisager d'utiliser la méthode de la classe parente
-        return super().get_elements()  # Appel à la méthode de la classe parente
+    def get_elements(self) -> List[Element]:
+        """Récupère tous les éléments définis dans le fichier XSD."""
+        if self.root is None:
+            return []
+        
+        namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+        elements = self.root.findall(".//xs:element", namespaces)
 
-    def compare(self, other: 'XSDFile') -> List[Inconsistency]:
-        """Va comparer le fichier XSD à un autre fichier XSD passé en paramètre"""
+        unique_elements = {}
+        for el in elements:
+            name = el.get("name")
+            if name and name not in unique_elements:
+                min_occurs = el.get("minOccurs", "1")  # Valeur par défaut 1 si non spécifiée
+                max_occurs = el.get("maxOccurs", "1")  # Valeur par défaut 1 si non spécifiée
+
+                unique_elements[name] = Element(
+                    name=name, 
+                    type=el.get("type", "xs:string"), 
+                    minOccurs=int(min_occurs) if min_occurs.isdigit() else min_occurs, 
+                    maxOccurs=int(max_occurs) if max_occurs.isdigit() else max_occurs
+                )
+
+        return list(unique_elements.values())  # Retourner une liste sans doublons
+
+    def compare(self, other_xsd: 'XSDFile') -> List[Inconsistency]:
+        """Compare ce fichier XSD avec un autre et retourne les différences."""
         inconsistencies = []
-        # Comparaison des noms
-        if self.name != other.name:
-            inconsistencies.append(Inconsistency("Les noms ne correspondent pas."))
-            print('Les noms ne correspondent pas')
-        # Comparaison des éléments racines
-        if self.root_element.name != other.root_element.name:
-            inconsistencies.append(Inconsistency(f"Les noms des éléments racines ne correspondent pas: {self.root_element.name} vs {other.root_element.name}"))
-        # Comparaison des enfants de l'élément racine
-        self_children = {child.name: child for child in self.root_element.children}
-        other_children = {child.name: child for child in other.root_element.children}
-        # Vérification des éléments manquants dans l'un ou l'autre XSD
-        for child_name in set(self_children.keys()).union(other_children.keys()):
-            if child_name not in self_children:
-                inconsistencies.append(Inconsistency(f"L'élément '{child_name}' est manquant dans le premier fichier XSD."))
-                print(f"L'élément '{child_name}' est manquant dans le premier fichier XSD.")
-            elif child_name not in other_children:
-                inconsistencies.append(Inconsistency(f"L'élément '{child_name}' est manquant dans le second fichier XSD."))
-                (f"L'élément '{child_name}' est manquant dans le second fichier XSD.")
-            else:
-                # Comparaison des propriétés des éléments
-                self_child = self_children[child_name]
-                other_child = other_children[child_name]
 
-                if self_child.type != other_child.type:
-                    inconsistencies.append(Inconsistency(f"Les types de l'élément '{child_name}' diffèrent: {self_child.type} vs {other_child.type}"))
-                    print(f"Les types de l'élément '{child_name}' diffèrent: {self_child.type} vs {other_child.type}")
-                if self_child.minOccurs != other_child.minOccurs:
-                    inconsistencies.append(Inconsistency(f"Différence sur l'occurence minimum pour l'élément '{child_name}': {self_child.minOccurs} vs {other_child.minOccurs}"))
-                    print(f"Différence sur l'occurence minimum pour l'élément '{child_name}': {self_child.minOccurs} vs {other_child.minOccurs}")
-                if self_child.maxOccurs != other_child.maxOccurs:
-                    inconsistencies.append(Inconsistency(f"Différence sur l'occurence maximum pour l'élément '{child_name}': {self_child.maxOccurs} vs {other_child.maxOccurs}"))
-                    print(f"Différence sur l'occurence maximum pour l'élément '{child_name}': {self_child.maxOccurs} vs {other_child.maxOccurs}")
-                # Comparaison des attributs
-                self_attributes = {attr.name: attr for attr in self_child.attributes}
-                other_attributes = {attr.name: attr for attr in other_child.attributes}
-                for attr_name in set(self_attributes.keys()).union(other_attributes.keys()):
-                    if attr_name not in self_attributes:
-                        inconsistencies.append(Inconsistency(f"L'attribut '{attr_name}' est manquant dans l'élément '{child_name}' du premier fichier XSD."))
-                        print(f"L'attribut '{attr_name}' est manquant dans l'élément '{child_name}' du premier fichier XSD.")
-                    elif attr_name not in other_attributes:
-                        inconsistencies.append(Inconsistency(f"L'attribut '{attr_name}' est manquant dans l'élément '{child_name}' du second fichier XSD."))
-                        print(f"L'attribut '{attr_name}' est manquant dans l'élément '{child_name}' du second fichier XSD.")
-                    else:
-                        self_attr = self_attributes[attr_name]
-                        other_attr = other_attributes[attr_name]
+        # Debug : Vérifier que les fichiers ont bien des éléments
+        self_elements = self.get_elements()
+        other_elements = other_xsd.get_elements()
 
-                        if self_attr.type != other_attr.type:
-                            inconsistencies.append(Inconsistency(f"Les types de l'attribut '{attr_name}' dans l'élément '{child_name}' diffèrent: {self_attr.type} vs {other_attr.type}"))
-                            print(f"Les types de l'attribut '{attr_name}' dans l'élément '{child_name}' diffèrent: {self_attr.type} vs {other_attr.type}")
+        print("📌 DEBUG : Éléments dans", self.path)
+        for el in self_elements:
+            print(f"  - {el.name}")
 
-                        if self_attr.restrictions != other_attr.restrictions:
-                            inconsistencies.append(Inconsistency(f"Les restrictions de l'attribut '{attr_name}' dans l'élément '{child_name}' diffèrent: {self_attr.restrictions} vs {other_attr.restrictions}"))
-                            print(f"Les restrictions de l'attribut '{attr_name}' dans l'élément '{child_name}' diffèrent: {self_attr.restrictions} vs {other_attr.restrictions}")
+        print("📌 DEBUG : Éléments dans", other_xsd.path)
+        for el in other_elements:
+            print(f"  - {el.name}")
+
+        if self.root is None or other_xsd.root is None:
+            return [Inconsistency(f"Erreur : un des fichiers XSD est vide ou invalide.", None, None)]
+
+        if not self_elements or not other_elements:
+            inconsistencies.append(Inconsistency("Erreur : un des fichiers XSD n'a pas été chargé correctement.", None, None))
+            return inconsistencies
+
+        # Comparaison des éléments
+        for element in self_elements:
+            if element.name not in [e.name for e in other_elements]:
+                inconsistencies.append(Inconsistency(f"Élément supprimé : {element.name}", element, None))
+
+        for element in other_elements:
+            if element.name not in [e.name for e in self_elements]:
+                inconsistencies.append(Inconsistency(f"Élément ajouté : {element.name}", element, None))
+
         return inconsistencies
 
     def log_action(self, action: str) -> None:
