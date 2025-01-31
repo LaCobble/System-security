@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Optional
 import xml.etree.ElementTree as ET
 
-# Interface de XML
 class XMLInterface(ABC):
     @abstractmethod
     def load_from_file(self, path: str) -> None:

@@ -1,11 +1,13 @@
 from interfaces.AttributeInterface import AttributeInterface
 
 class Attribute(AttributeInterface):
+    """Représente un attribut d'une entité ou d'une relation dans un schéma de base de données relationnelle."""
     def __init__(self, name: str, type: str, restrictions: str):
+        """Initialise un attribut avec un nom, un type et des restrictions."""
         self.name = name
         self.type = type
         self.restrictions = restrictions
-        
+
     def __str__(self) -> str:
         """Représentation textuelle simplifiée de l'instance."""
         return f"Attribute(name={self.name}, type={self.type}, restrictions={self.restrictions})"
