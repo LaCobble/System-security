@@ -26,31 +26,45 @@ class Element(ElementInterface):
             return False
         return True
 
-    def compare(self, other: ElementInterface) -> List[Inconsistency]:
+    def compare(self, other: 'Element', path="Root") -> List[Inconsistency]:
         """Compare l'élément actuel avec un autre élément."""
         inconsistencies = []
 
+        # Comparaison des noms
         if self.name != other.name:
-            inconsistencies.append(Inconsistency(f"Nom différent : {self.name} vs {other.name}", self))
+            inconsistencies.append(Inconsistency(f"Nom différent : {self.name} vs {other.name} ({path})"))
 
+        # Comparaison des types
         if self.type != other.type:
-            inconsistencies.append(Inconsistency(f"Type différent : {self.type} vs {other.type}", self))
+            inconsistencies.append(Inconsistency(f"Type différent pour {self.name} ({path}) : {self.type} vs {other.type}"))
 
-        if self.minOccurs != other.minOccurs:
-            inconsistencies.append(Inconsistency(f"minOccurs différent : {self.minOccurs} vs {other.minOccurs}", self))
+        # Comparaison des attributs
+        el1_attributes = {attr.name: attr for attr in self.attributes}
+        el2_attributes = {attr.name: attr for attr in other.attributes}
 
-        if self.maxOccurs != other.maxOccurs:
-            inconsistencies.append(Inconsistency(f"maxOccurs différent : {self.maxOccurs} vs {other.maxOccurs}", self))
+        for attr_name, attr in el1_attributes.items():
+            if attr_name not in el2_attributes:
+                inconsistencies.append(Inconsistency(f"Attribut supprimé : {attr_name} dans {self.name} ({path})"))
+            elif el2_attributes[attr_name].type != attr.type:
+                inconsistencies.append(Inconsistency(f"Type d'attribut modifié : {attr_name} ({path}) {attr.type} vs {el2_attributes[attr_name].type}"))
 
-        # Comparer les attributs
-        for attribute in self.attributes:
-            if attribute not in other.attributes:
-                inconsistencies.append(Inconsistency(f"Attribut manquant : {attribute.name}", self, attribute))
+        for attr_name in el2_attributes:
+            if attr_name not in el1_attributes:
+                inconsistencies.append(Inconsistency(f"Attribut ajouté : {attr_name} dans {self.name} ({path})"))
 
-        # Comparer les enfants
-        for child in self.children:
-            if child not in other.children:
-                inconsistencies.append(Inconsistency(f"Élément enfant manquant : {child.name}", self))
+        # Comparaison des enfants
+        el1_children = {child.name: child for child in self.children}
+        el2_children = {child.name: child for child in other.children}
+
+        for child_name, child in el1_children.items():
+            if child_name in el2_children:
+                inconsistencies.extend(child.compare(el2_children[child_name], path=f"{path}/{child_name}"))
+            else:
+                inconsistencies.append(Inconsistency(f"Élément supprimé : {child_name} dans {self.name} ({path})"))
+
+        for child_name in el2_children:
+            if child_name not in el1_children:
+                inconsistencies.append(Inconsistency(f"Élément ajouté : {child_name} dans {self.name} ({path})"))
 
         return inconsistencies
 
