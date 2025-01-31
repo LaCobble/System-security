@@ -10,3 +10,6 @@ class Inconsistency(InconsistencyInterface):
 
     def __str__(self) -> str:
         return f"Inconsistency(description={self.description}, element={self.element}, attribute={self.attribute})"
+
+    def __repr__(self):
+        return f"Inconsistency(description={self.description}, element={self.element}, attribute={self.attribute})"
