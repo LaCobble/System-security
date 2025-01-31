@@ -1,3 +1,6 @@
+# Forcer l'encodage UTF-8 sous Windows
+chcp 65001 > $null
+
 # Script PowerShell pour executer tous les tests automatiquement
 
 # Definition des fichiers de test
@@ -13,11 +16,17 @@ $USER_NO_ACCESS = "user1"
 $ADMIN_USER = "admin"
 $EXISTING_USER = "alice"
 
-# Verification de l'existence des fichiers avant execution
+# Verification des fichiers avant execution
+Write-Host "`n=======================" -ForegroundColor Cyan
+Write-Host "[INFO] Verification des fichiers de test" -ForegroundColor Cyan
+Write-Host "=======================`n" -ForegroundColor Cyan
+
 $files = @($XSD_BASE, $XSD_PRIME, $XSD_DOUBLE_PRIME, $XSD_EMPTY, $XSD_INVALID, $XML_TEST, $XML_INVALID)
 foreach ($file in $files) {
     if (!(Test-Path $file)) {
         Write-Host "[ERREUR] Le fichier $file est introuvable. Test ignore." -ForegroundColor Red
+    } else {
+        Write-Host "[OK] Fichier trouve : $file" -ForegroundColor Green
     }
 }
 
@@ -52,7 +61,7 @@ Write-Host "-----------------------------------"
 python Main.py --validate $XSD_INVALID $XML_TEST $ADMIN_USER
 Write-Host "-----------------------------------"
 if (!(Test-Path $XSD_NOT_FOUND)) {
-    Write-Host "[ERREUR] Le fichier $XSD_NOT_FOUND est manquant. Test ignore." -ForegroundColor Red
+    Write-Host "[ERREUR] Le fichier $XSD_NOT_FOUND est manquant. Verifiez le chemin ou utilisez un fichier valide." -ForegroundColor Red
 }
 Write-Host "-----------------------------------"
 
@@ -88,10 +97,23 @@ Write-Host "-----------------------------------"
 Write-Host "`n=======================" -ForegroundColor Blue
 Write-Host "[INFO] Test d'ajout d'un utilisateur existant (Alice)" -ForegroundColor Blue
 Write-Host "=======================`n" -ForegroundColor Blue
-python Main.py --add-user $EXISTING_USER
+
+# Verification si l'utilisateur existe deja avant de l'ajouter
+Write-Host "L'utilisateur Alice existe deja. Voulez-vous ecraser l'ancien mot de passe ? (o/n)" -ForegroundColor Yellow
+$CHOICE = Read-Host "Reponse"
+
+if ($CHOICE -eq "o") {
+    Write-Host "[INFO] Suppression de l'utilisateur Alice..." -ForegroundColor Red
+    python Main.py --remove-user $EXISTING_USER
+    Write-Host "✅ Utilisateur Alice supprime avec succes." -ForegroundColor Green
+    Write-Host "[INFO] Creation d'un nouvel utilisateur Alice..." -ForegroundColor Green
+    python Main.py --add-user $EXISTING_USER
+} else {
+    Write-Host "[INFO] Operation annulee." -ForegroundColor Green
+}
 Write-Host "-----------------------------------"
 
 # Fin du test
 Write-Host "`n=======================" -ForegroundColor Green
-Write-Host "[INFO] Tous les tests ont ete executes !" -ForegroundColor Green
+Write-Host "[INFO] Tous les tests ont ete executes avec succes !" -ForegroundColor Green
 Write-Host "=======================`n" -ForegroundColor Green
