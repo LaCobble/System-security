@@ -4,20 +4,24 @@ from interfaces.AttributeInterface import AttributeInterface
 from Inconsistency import Inconsistency
 
 class Element(ElementInterface):
+    """Représente un élément XML avec ses attributs et ses enfants."""
     def __init__(self, name: str, type: str, minOccurs: int, maxOccurs: int,
                 attributes: List[AttributeInterface] = None,
                 children: List['Element'] = None):
+        """Initialise un élément avec un nom, un type, des contraintes et des attributs/enfants."""
         self.name = name
         self.type = type
         self.minOccurs = minOccurs
         self.maxOccurs = maxOccurs
         self.attributes = attributes if attributes is not None else []
         self.children = children if children is not None else []
-        
+
     def __repr__(self):
+        """Représentation officielle de l'instance pour le débogage."""
         return f"Element(name='{self.name}', type='{self.type}', attributes='{self.attributes}', children='{self.children}')"
 
     def __str__(self):
+        """Représentation textuelle simplifiée de l'instance."""
         return f"Element '{self.name}' de type '{self.type}', attributes='{self.attributes}', children='{self.children}'"
 
     def validate_constraints(self) -> bool:
@@ -30,15 +34,12 @@ class Element(ElementInterface):
         """Compare l'élément actuel avec un autre élément."""
         inconsistencies = []
 
-        # Comparaison des noms
         if self.name != other.name:
             inconsistencies.append(Inconsistency(f"Nom différent : {self.name} vs {other.name} ({path})"))
 
-        # Comparaison des types
         if self.type != other.type:
             inconsistencies.append(Inconsistency(f"Type différent pour {self.name} ({path}) : {self.type} vs {other.type}"))
 
-        # Comparaison des attributs
         el1_attributes = {attr.name: attr for attr in self.attributes}
         el2_attributes = {attr.name: attr for attr in other.attributes}
 
@@ -52,7 +53,6 @@ class Element(ElementInterface):
             if attr_name not in el1_attributes:
                 inconsistencies.append(Inconsistency(f"Attribut ajouté : {attr_name} dans {self.name} ({path})"))
 
-        # Comparaison des enfants
         el1_children = {child.name: child for child in self.children}
         el2_children = {child.name: child for child in other.children}
 

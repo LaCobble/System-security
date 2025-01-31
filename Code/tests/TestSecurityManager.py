@@ -8,28 +8,21 @@ from SecurityManager import SecurityManager
 class TestSecurityManager(unittest.TestCase):
 
     def setUp(self):
+        """Initialise un SecurityManager pour les tests."""
         self.password = 'p@ssword'
-
-        # Supprimer le fichier de mots de passe s'il existe
         if os.path.isfile('passwords.json'):
             os.remove('passwords.json')
-
-        # Créer un nouveau fichier
         with open('passwords.json', 'w') as f:
             f.write('{}')
-
         self.manager = SecurityManager('passwords.json')
-
-        # Ajout d'un utilisateur avec un mot de passe connu
         with mock.patch('getpass.getpass', side_effect=[self.password, self.password]):
             self.manager.add_user("testuser")
 
-        # Création d'un fichier de test
         with open('test_file.txt', 'wb') as f:
             f.write(b'This is a test file.')
 
     def tearDown(self):
-        # Supprimer le fichier temporaire après le test
+        """Nettoie les fichiers créés pendant les tests."""
         if os.path.isfile('test_file.txt'):
             os.remove('test_file.txt')
 
@@ -38,7 +31,6 @@ class TestSecurityManager(unittest.TestCase):
         with mock.patch('getpass.getpass', side_effect=[self.password, self.password]):
             self.manager.add_user("testuser")
 
-            # Vérifiez le contenu de passwords.json pour voir si l'utilisateur a été ajouté correctement
             with open('passwords.json', 'r') as f:
                 passwords = json.load(f)
                 print("Stored passwords:", passwords)  # Affiche les mots de passe stockés
@@ -51,7 +43,6 @@ class TestSecurityManager(unittest.TestCase):
 
     def test_authenticate_with_wrong_password(self):
         """Teste l'authentification avec un mot de passe incorrect."""
-        # Simuler l'authentification de l'utilisateur avec un mot de passe incorrect
         with mock.patch('getpass.getpass', return_value='wrong_password'):
             self.assertFalse(self.manager.authenticate_user("testuser"))
 
@@ -62,7 +53,6 @@ class TestSecurityManager(unittest.TestCase):
 
     def test_validate_integrity(self):
         """Teste la validation de l'intégrité d'un fichier."""
-        # Calculer le hachage attendu pour le fichier de test
         hasher = hashlib.sha256()
         with open('test_file.txt', 'rb') as f:
             while chunk := f.read(8192):

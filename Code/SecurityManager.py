@@ -6,7 +6,9 @@ import os
 from interfaces.SecurityManagerInterface import SecurityManagerInterface
 
 class SecurityManager(SecurityManagerInterface):
+    """Gestionnaire de sécurité pour l'authentification et l'autorisation d'accès aux fichiers."""
     def __init__(self, passwords_file: str = 'passwords.json'):
+        """Initialise le gestionnaire de sécurité avec les mots de passe stockés dans un fichier."""
         try:
             with open(passwords_file, 'r') as f:
                 self.stored_passwords = json.load(f)
@@ -31,7 +33,6 @@ class SecurityManager(SecurityManagerInterface):
             print(f"File {file} does not exist.")
             return False
 
-        # Calculer le hachage du fichier
         hasher = hashlib.sha256()
         with open(file, 'rb') as f:
             while chunk := f.read(8192):
@@ -39,7 +40,6 @@ class SecurityManager(SecurityManagerInterface):
 
         file_hash = hasher.hexdigest()
 
-        # Comparer le hachage du fichier avec le hachage attendu
         if file_hash == expected_hash:
             print(f"File integrity validated for {file}.")
             return True
@@ -67,7 +67,6 @@ class SecurityManager(SecurityManagerInterface):
             print(f"User {username} already exists.")
             return
 
-        # Double saisie sécurisée du mot de passe pour confirmation
         password = getpass.getpass("Enter new password: ")
         confirm_password = getpass.getpass("Confirm new password: ")
 
@@ -75,7 +74,6 @@ class SecurityManager(SecurityManagerInterface):
             print("Passwords do not match. Please try again.")
             return
 
-        # Hachage du mot de passe
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         self.stored_passwords[username] = hashed_password
         self._save_passwords()
