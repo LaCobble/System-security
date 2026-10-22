@@ -8,7 +8,7 @@
 A school system-security project: model, design and prototype a tool that detects inconsistencies between two versions of an XSD schema and the XML files that depend on it, with access control, integrity checks and audit logging.
 
 <p align="center">
-  <img src="class_diagram.jpg" width="80%" alt="Detailed UML class diagram of the project">
+  <img src="docs/images/class-diagram.webp" width="80%" alt="Detailed UML class diagram of the project">
 </p>
 
 ## What it does
@@ -22,6 +22,21 @@ When an XML schema (XSD) evolves, the XML documents written for the previous ver
 - protect the process: user authentication (bcrypt-hashed passwords), per-file access checks, SHA-256 integrity validation and an audit log of every action.
 
 The repository contains the **modelling work** (metamodel and detailed UML class diagram, with written descriptions) and a **Python prototype** of the classes, covered by unit tests. Some operations, such as full XSD validation, are still placeholders in the prototype.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/metamodel.webp" alt="Project metamodel"></td>
+    <td width="50%"><img src="docs/images/unit-tests.webp" alt="The 33 unit tests passing"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Metamodel: schemas, documents, elements and the security services (StarUML)</sub></td>
+    <td align="center"><sub>A real run of the test suite: 33 tests passing (shown with pytest's verbose report; the tests are plain <code>unittest</code>)</sub></td>
+  </tr>
+</table>
+
+The detailed class diagram at the top is the one the Python code follows.
 
 ## Getting started
 
@@ -70,7 +85,7 @@ The 33 tests cover attributes, elements, XML and XSD files, inconsistencies, the
 
 ## Context
 
-Group school project for a system-security course (October 2024), built with a classmate. The modelling documents are in French. Later iterations of the code live on the `main_PY` and `main_Paul` branches. The project is kept as it was submitted, as a portfolio piece; only the repository around it (documentation, CI) has been tidied up.
+Group school project for a system-security course (October 2024), built with a classmate. The modelling documents are in French. Later iterations of the code live on other branches of this repository. The project is kept as it was submitted, as a portfolio piece; only the repository around it (documentation, CI) has been tidied up.
 
 ## Contributing
 
